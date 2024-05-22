@@ -1,0 +1,12 @@
+
+This code checks for the following conditions:
+1. If it's a regular booking:
+   - Checks if the selected time is in the past.
+   - Checks if the end time is before the start time.
+   - Checks if the selected time range is available for booking.
+   - Proceeds with regular booking if all conditions are met.
+   
+2. If it's a pre-booking:
+   - Checks if the selected time range for pre-booking conflicts with an existing booking.
+   - Checks if the end time is before the start time.
+   - Proceeds with pre-booking if all conditions are met.
