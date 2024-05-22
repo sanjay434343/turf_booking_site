@@ -1,3 +1,148 @@
+<?php
+// Include the database connection
+include 'connection.php';
+
+// Function to display all bookings
+function displayAllBookings($conn) {
+    // Prepare and execute the SQL query
+    $sql = "SELECT id, username, phonenumber, book_type, ground, selectedtime, endtime, prebookdate, booked_datetime FROM booking";
+    $result = $conn->query($sql);
+
+    // Check if there are any results
+    if ($result->num_rows > 0) {
+        // Output data of each row
+        while ($row = $result->fetch_assoc()) {
+            echo "<tr>
+                    <td>{$row['id']}</td>
+                    <td>{$row['username']}</td>
+                    <td>{$row['phonenumber']}</td>
+                    <td>{$row['book_type']}</td>
+                    <td>{$row['ground']}</td>
+                    <td>{$row['selectedtime']}</td>
+                    <td>{$row['endtime']}</td>
+                    <td>{$row['prebookdate']}</td>
+                    <td>{$row['booked_datetime']}</td>
+                  </tr>";
+        }
+    } else {
+        echo "No bookings found.";
+    }
+}
+
+// Function to calculate total bookings for all time
+function getTotalBookings($conn) {
+    // Prepare and execute the SQL query to count total bookings
+    $sql = "SELECT COUNT(*) AS total FROM booking";
+    $result = $conn->query($sql);
+
+    // Check if query was successful
+    if ($result) {
+        // Fetch the total count from the result
+        $row = $result->fetch_assoc();
+        $totalBookings = $row['total'];
+        
+        // Return the total bookings count
+        return $totalBookings;
+    } else {
+        // If query failed, return error message
+        return "Error: Unable to fetch total bookings.";
+    }
+}
+
+function getTotalBookingsForToday($conn) {
+    // Get current date
+    $currentDate = date('Y-m-d');
+
+    // Prepare and execute the SQL query to count total bookings for today
+    $sql = "SELECT COUNT(*) AS total FROM booking WHERE DATE(booked_datetime) = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $currentDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    // Check if query was successful
+    if ($result) {
+        // Fetch the total count from the result
+        $row = $result->fetch_assoc();
+        $totalBookings = $row['total'];
+
+        // Return the total bookings count for today
+        return $totalBookings;
+    } else {
+        // If query failed, return error message
+        return "Error: Unable to fetch total bookings for today.";
+    }
+}
+
+// Call the function to get total bookings for today
+$totalToday = getTotalBookingsForToday($conn);
+
+
+// Function to calculate total users
+function getTotalUsers($conn) {
+    // Prepare and execute the SQL query to count total users
+    $sql = "SELECT COUNT(*) AS total FROM userdetail";
+    $result = $conn->query($sql);
+
+    // Check if query was successful
+    if ($result) {
+        // Fetch the total count from the result
+        $row = $result->fetch_assoc();
+        $totalUsers = $row['total'];
+
+        // Return the total users count
+        return $totalUsers;
+    } else {
+        // If query failed, return error message
+        return "Error: Unable to fetch total users.";
+    }
+}
+
+// Call the function to get total users
+$totalUsers = getTotalUsers($conn);
+
+// Check if total users count is valid
+if (!is_string($totalUsers)) {
+    echo "Total users: $totalUsers";
+} else {
+    echo $totalUsers; // Output error message
+}
+
+// Close connection
+// Function to calculate total messages in the contact table
+function getTotalMessages($conn) {
+    // Prepare and execute the SQL query to count total messages
+    $sql = "SELECT COUNT(*) AS total FROM contact";
+    $result = $conn->query($sql);
+
+    // Check if query was successful
+    if ($result) {
+        // Fetch the total count from the result
+        $row = $result->fetch_assoc();
+        $totalMessages = $row['total'];
+        
+        // Return the total messages count
+        return $totalMessages;
+    } else {
+        // If query failed, return error message
+        return "Error: Unable to fetch total messages.";
+    }
+}
+
+// Call the function to get total messages
+$totalMessages = getTotalMessages($conn);
+
+// Check if total messages count is valid
+if (!is_string($totalMessages)) {
+    echo "Total messages: $totalMessages";
+} else {
+    echo $totalMessages; // Output error message
+}
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -232,22 +377,17 @@
                         <div class="card shadow border-0">
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col">
-                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Budget</span>
-                                        <span class="h3 font-bold mb-0">$750.90</span>
+                                    <div class="col h3 font-bold mb-0 ">
+                                    <span class="h6 font-semibold text-muted text-sm d-block mb-2">Total Bookings</span>
+                                    <?php echo getTotalBookings($conn); ?>
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-tertiary text-white text-lg rounded-circle">
-                                            <i class="bi bi-credit-card"></i>
+                                            <i class="bi bi-calendar2-check"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-2 mb-0 text-sm">
-                                    <span class="badge badge-pill bg-soft-success text-success me-2">
-                                        <i class="bi bi-arrow-up me-1"></i>13%
-                                    </span>
-                                    <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -255,22 +395,18 @@
                         <div class="card shadow border-0">
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col">
-                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">New projects</span>
-                                        <span class="h3 font-bold mb-0">215</span>
+                                    <div class="col  h3 font-bold mb-0 ">
+                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Today Bookings</span>
+                                        
+                                        <?php echo getTotalBookingsForToday($conn); ?>
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-primary text-white text-lg rounded-circle">
-                                            <i class="bi bi-people"></i>
+                                            <i class="bi bi-calendar2-check"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-2 mb-0 text-sm">
-                                    <span class="badge badge-pill bg-soft-success text-success me-2">
-                                        <i class="bi bi-arrow-up me-1"></i>30%
-                                    </span>
-                                    <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                </div>
+                              
                             </div>
                         </div>
                     </div>
@@ -278,22 +414,17 @@
                         <div class="card shadow border-0">
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col">
-                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Total hours</span>
-                                        <span class="h3 font-bold mb-0">1.400</span>
+                                    <div class="col h3 font-bold mb-0">
+                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Total users</span>
+                                        <?php echo getTotalUsers($conn); ?>  
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-info text-white text-lg rounded-circle">
-                                            <i class="bi bi-clock-history"></i>
+                                            <i class="bi-person-lines-fill"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-2 mb-0 text-sm">
-                                    <span class="badge badge-pill bg-soft-danger text-danger me-2">
-                                        <i class="bi bi-arrow-down me-1"></i>-5%
-                                    </span>
-                                    <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -302,21 +433,16 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Work load</span>
-                                        <span class="h3 font-bold mb-0">95%</span>
+                                        <span class="h6 font-semibold text-muted text-sm d-block mb-2">Total Messages</span>
+                                        <?php echo getTotalMessages($conn) ?>      
                                     </div>
                                     <div class="col-auto">
                                         <div class="icon icon-shape bg-warning text-white text-lg rounded-circle">
-                                            <i class="bi bi-minecart-loaded"></i>
+                                            <i class="bi bi-chat-text"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-2 mb-0 text-sm">
-                                    <span class="badge badge-pill bg-soft-success text-success me-2">
-                                        <i class="bi bi-arrow-up me-1"></i>10%
-                                    </span>
-                                    <span class="text-nowrap text-xs text-muted">Since last month</span>
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -329,325 +455,23 @@
                         <table class="table table-hover table-nowrap">
                             <thead class="thead-light">
                                 <tr>
+                                <th scope="col">ID</th>
                                     <th scope="col">Name</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Company</th>
-                                    <th scope="col">Offer</th>
-                                    <th scope="col">Meeting</th>
+                                    <th scope="col">Mobile No</th>
+                                    <th scope="col">Booking Type</th>
+                                    <th scope="col">Selected Ground</th>
+                                    <th scope="col">Start Time</th>
+                                    <th scope="col">End Time</th>
+                                    <th scope="col">Pre-Book Date</th>
+                                    <th scope="col">Booked Date & Time</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Robert Fox
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Feb 15, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-1.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Dribbble
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $3.500
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-success"></i>Scheduled
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1610271340738-726e199f0258?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Darlene Robertson
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Apr 15, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-2.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Netguru
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $2.750
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-warning"></i>Postponed
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1610878722345-79c5eaf6a48c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Theresa Webb
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Mar 20, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-3.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Figma
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $4.200
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-success"></i>Scheduled
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1612422656768-d5e4ec31fac0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Kristin Watson
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Feb 15, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-4.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Mailchimp
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $3.500
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-dark"></i>Not discussed
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1608976328267-e673d3ec06ce?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Cody Fisher
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Apr 10, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-5.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Webpixels
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $1.500
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-danger"></i>Canceled
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Robert Fox
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Feb 15, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-1.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Dribbble
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $3.500
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-success"></i>Scheduled
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1610271340738-726e199f0258?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Darlene Robertson
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Apr 15, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-2.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Netguru
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $2.750
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-warning"></i>Postponed
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1610878722345-79c5eaf6a48c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Theresa Webb
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Mar 20, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-3.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Figma
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $4.200
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-success"></i>Scheduled
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1612422656768-d5e4ec31fac0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Kristin Watson
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Feb 15, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-4.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Mailchimp
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $3.500
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-dark"></i>Not discussed
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <img alt="..." src="https://images.unsplash.com/photo-1608976328267-e673d3ec06ce?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=3&w=256&h=256&q=80" class="avatar avatar-sm rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Cody Fisher
-                                        </a>
-                                    </td>
-                                    <td>
-                                        Apr 10, 2021
-                                    </td>
-                                    <td>
-                                        <img alt="..." src="https://preview.webpixels.io/web/img/other/logos/logo-5.png" class="avatar avatar-xs rounded-circle me-2">
-                                        <a class="text-heading font-semibold" href="#">
-                                            Webpixels
-                                        </a>
-                                    </td>
-                                    <td>
-                                        $1.500
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-dot">
-                                            <i class="bg-danger"></i>Canceled
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <a href="#" class="btn btn-sm btn-neutral">View</a>
-                                        <button type="button" class="btn btn-sm btn-square btn-neutral text-danger-hover">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                <?php
+                   displayAllBookings($conn);
+
+                                    ?>
                             </tbody>
                         </table>
                     </div>
